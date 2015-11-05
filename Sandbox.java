@@ -11,7 +11,7 @@ public class Sandbox {
 		CFG cfg = new CFG();
 		System.out.print("Enter commands ('quit' to exit). ");
 		System.out.println("Make sure to format the commands properly!");
-		System.out.println("1: To add a new rule, type it as 'A -> BCDE'.");
+		System.out.println("1: To add a new rule, type it as 'add A -> BCDE'.");
 		System.out.println("2: To print the CFG, type 'print'.");
 		System.out.println("3: To empty the CFG, type 'empty'.");
 		System.out.println("4: Convert to CNF by typing 'cnf'.");
@@ -49,8 +49,10 @@ public class Sandbox {
 				} else {
 					System.out.println("The language is infinite.");
 				}
-			} else {
+			} else if (word.startsWith("add")){
 				cfg.addRule(word);
+			} else {
+				System.out.println("Unknown command.");
 			}
 		}
 		sc.close();
