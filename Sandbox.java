@@ -50,7 +50,7 @@ public class Sandbox {
 					System.out.println("The language is infinite.");
 				}
 			} else if (word.startsWith("add")){
-				cfg.addRule(word);
+				cfg.addRule(word.substring(4));
 			} else {
 				System.out.println("Unknown command.");
 			}
