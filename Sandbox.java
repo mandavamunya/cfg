@@ -36,7 +36,7 @@ public class Sandbox {
 			} else if (word.equals("simplify")) {
 				cfg = cfg.removeUselessSymbols();
 			} else if (word.equals("cnf")) {
-				System.out.println("--> Not implemented! <--");
+				cfg = cfg.toCNF();
 			} else if (word.equals("emptiness")) {
 				if (cfg.languageIsEmpty()) {
 					System.out.println("The language is empty.");
