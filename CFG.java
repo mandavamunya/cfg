@@ -381,7 +381,8 @@ public class CFG {
 	 * TODO: IMPLEMENT
 	 */
 	public CFG toCNF() {
-		CFG g = this.substituteTerminals();
+		CFG g = this.createNewStartSymbol();
+		g = g.substituteTerminals();
 		g = g.splitUpLongRules();
 		g = g.removeEpsilonRules();
 		g = g.removeUnitRules();
@@ -655,10 +656,12 @@ public class CFG {
 				for (int pNtID : parentNts) {
 					nonUnitRules.get(pNtID).addAll(nonUnitRules.get(body.get(0)));
 				}
-				findUnitRules(body.get(0), parentNts);
+				if (!hasVisitedSymbol[body.get(0)]) {
+					findUnitRules(body.get(0), parentNts);
+				}
 			} else {
 				for (int symbolID : bodies.get(bodyID)) {
-					if (isNonterminal(symbolID)) {
+					if (isNonterminal(symbolID) && !hasVisitedSymbol[symbolID]) {
 						findUnitRules(symbolID, new ArrayList<Integer>());
 					}
 				}
