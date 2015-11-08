@@ -16,6 +16,16 @@ public class NewStartSymbolCorrectnessTest {
 	}
 
 	@Test
+	public void testBasicEpsilonGrammar() {
+		CFG g = new CFG();
+		g.addRule("S -> epsilon");
+		g = g.createNewStartSymbol();
+		assertTrue(g.containsRule("S -> epsilon"));
+		assertTrue(g.containsRule("S -> S0"));
+		assertTrue(g.containsRule("S0 -> epsilon"));
+	}
+
+	@Test
 	public void testSmallGrammar() {
 		CFG g = new CFG();
 		g.addRule("S -> a");

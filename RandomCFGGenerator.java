@@ -15,7 +15,8 @@ public class RandomCFGGenerator {
 			StringBuilder rule = new StringBuilder();
 			rule.append(nonterminals[random.nextInt(nonterminals.length)]);
 			rule.append(" -> ");
-			for (int l = 0; l < 4; l++) {
+			int bodyLength = random.nextInt(30) + 1;
+			for (int l = 0; l < bodyLength; l++) {
 				if (random.nextBoolean()) {
 					rule.append(terminals[random.nextInt(terminals.length)]);
 				} else {

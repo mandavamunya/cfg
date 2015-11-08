@@ -33,7 +33,6 @@ public class RemoveEpsilonCorrectnessTest {
 		g.addRule("A -> epsilon");
 		g.addRule("B -> epsilon");
 		g = g.removeEpsilonRules();
-		System.out.println(g.toString());
 		assertTrue(g.containsRule("S -> AB"));
 		assertTrue(g.containsRule("A -> aAA"));
 		assertTrue(g.containsRule("B -> bBB"));
@@ -42,5 +41,16 @@ public class RemoveEpsilonCorrectnessTest {
 		assertFalse(g.containsRule("A -> epsilon"));
 		assertFalse(g.containsRule("B -> epsilon"));
 	}
+	
+	@Test
+	public void test3() {
+		CFG g = new CFG();
+		g.addRule("S -> AB");
+		g.addRule("A -> epsilon");
+		g.addRule("B -> b");
+		g = g.removeEpsilonRules();
+		System.out.println(g.toString());
+	}
+
 
 }

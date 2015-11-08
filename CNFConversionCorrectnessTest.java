@@ -21,7 +21,7 @@ public class CNFConversionCorrectnessTest {
 
 	@Test
 	public void testThatEmptyGrammarStaysEmpty() {
-		assertEquals(new CFG().toCNF().noOfRules(), 0);
+		assertEquals(0, new CFG().toCNF().noOfRules());
 	}
 
 	@Test
@@ -49,13 +49,27 @@ public class CNFConversionCorrectnessTest {
 	}
 
 	@Test
+	public void testThatGrammarWithOnlyUnreachableSymbolsBecomesEmpty() {
+		CFG g = new CFG();
+		g.addRule("A -> A");
+		g.addRule("A -> Bb");
+		g.addRule("B -> Addf");
+		g.addRule("A -> a");
+		g.addRule("B -> bb");
+		g.addRule("C -> Dg");
+		g.addRule("D -> E");
+		g.addRule("E -> efg");
+		g = g.toCNF();
+		assertEquals(g.noOfRules(), 0);
+	}
+
+	@Test
 	public void testGrammarThatShouldDeriveAllCombinationsOfAAndB() {
 		CFG g = new CFG();
 		g.addRule("S -> a");
 		g.addRule("S -> b");
 		g.addRule("S -> SS");
 		g = g.toCNF();
-		System.out.println(g.toString());
 
 		ArrayList<String> words = new ArrayList<String>();
 		StringBuilder sb = new StringBuilder();
