@@ -389,7 +389,8 @@ public class CFG {
 	 * TODO: IMPLEMENT
 	 */
 	public CFG toCNF() {
-		CFG g = this.createNewStartSymbol();
+		CFG g = this;
+		g = g.createNewStartSymbol();
 		g = g.substituteTerminals();
 		g = g.splitUpLongRules();
 		g = g.removeEpsilonRules();
@@ -631,8 +632,13 @@ public class CFG {
 			}
 		}*/
 		findSCCInit();
+		CFG g = this.removeUnitCycles();
+		return g.removeUnitRules3();
+	}
+	
+	public CFG removeUnitCycles() {
+		findSCCInit();
 		CFG g = new CFG();
-		
 		for (int ntID = 0; ntID < nts.size(); ntID++) {
 			for (int bodyID : rules.get(ntID)) {
 				ArrayList<Integer> body = bodies.get(bodyID);
@@ -647,36 +653,13 @@ public class CFG {
 						rule.append("epsilon");
 					}
 				}
-				g.addRule(rule.toString());
-			}
-			rules.get(scc[ntID]).addAll(rules.get(ntID));
-		}
-		g = g.removeUnitRules2();
-		return g.removeUnitRules3();
-	}
-	
-	public CFG removeUnitCycles() {
-		findSCCInit();
-		CFG g = new CFG();
-		
-		for (int ntID = 0; ntID < nts.size(); ntID++) {
-			for (int bodyID : rules.get(ntID)) {
-				ArrayList<Integer> body = bodies.get(bodyID);
-				StringBuilder rule = new StringBuilder(nts.get(scc[ntID]));
-				rule.append(" -> ");
-				for (int i = 0; i < body.size(); i++) {
-					if (isNonterminal(body.get(i))) {
-						rule.append(nts.get(scc[body.get(i)]));
-					} else {
-						rule.append(CFGParser.terminalToString(body.get(i)));
-					}
-				}
 				if (!(body.size() == 1 && isNonterminal(body.get(0)) && scc[ntID] == scc[body.get(0)])) {
 					g.addRule(rule.toString());
 				}
 			}
 			rules.get(scc[ntID]).addAll(rules.get(ntID));
 		}
+		g = g.removeUnitRules2();
 		return g;
 	}
 	
@@ -813,7 +796,7 @@ public class CFG {
 	
 	private Queue<Integer> initiateQueueWithNonUnitNts() {
 		Queue<Integer> q = new LinkedList<Integer>();
-		for (int ntID = 1; ntID < nts.size(); ntID++) {
+		for (int ntID = 0; ntID < nts.size(); ntID++) {
 			if (ntUnitRuleCount[ntID] == 0) {
 				q.add(ntID);
 				hasVisitedSymbol[ntID] = true;

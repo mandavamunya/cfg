@@ -113,4 +113,26 @@ public class CNFConversionCorrectnessTest {
 		assertFalse(g.derives("((a)((aa)))((a)((a))"));
 	}
 
+	@Test
+	public void tesGrammarFromSipser() {
+		CFG g = new CFG();
+		g.addRule("S -> ASA");
+		g.addRule("S -> aB");
+		g.addRule("A -> B");
+		g.addRule("A -> S");
+		g.addRule("B -> b");
+		g.addRule("B -> epsilon");
+		g = g.toCNF();
+		System.out.println(g.toString());
+		assertTrue(g.containsRule("S -> a"));
+		assertTrue(g.containsRule("A -> a"));
+		assertTrue(g.containsRule("A -> b"));
+		assertTrue(g.containsRule("B -> b"));
+		assertFalse(g.containsRule("S -> ASA"));
+		assertFalse(g.containsRule("S -> aB"));
+		assertFalse(g.containsRule("A -> B"));
+		assertFalse(g.containsRule("A -> S"));
+		assertFalse(g.containsRule("B -> epsilon"));
+	}
+
 }
