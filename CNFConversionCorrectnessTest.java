@@ -29,6 +29,7 @@ public class CNFConversionCorrectnessTest {
 		CFG g = new CFG();
 		g.addRule("S -> a");
 		g = g.toCNF();
+		assertTrue(g.isInCNF());
 		assertTrue(g.containsRule("S -> a"));
 	}
 
@@ -37,6 +38,7 @@ public class CNFConversionCorrectnessTest {
 		CFG g = new CFG();
 		g.addRule("S -> epsilon");
 		g = g.toCNF();
+		assertTrue(g.isInCNF());
 		assertTrue(g.containsRule("S -> epsilon"));
 	}
 
@@ -45,6 +47,7 @@ public class CNFConversionCorrectnessTest {
 		CFG g = new CFG();
 		g.addRule("S -> A");
 		g = g.toCNF();
+		assertTrue(g.isInCNF());
 		assertEquals(g.noOfRules(), 0);
 	}
 
@@ -60,6 +63,7 @@ public class CNFConversionCorrectnessTest {
 		g.addRule("D -> E");
 		g.addRule("E -> efg");
 		g = g.toCNF();
+		assertTrue(g.isInCNF());
 		assertEquals(g.noOfRules(), 0);
 	}
 
@@ -70,6 +74,7 @@ public class CNFConversionCorrectnessTest {
 		g.addRule("S -> b");
 		g.addRule("S -> SS");
 		g = g.toCNF();
+		assertTrue(g.isInCNF());
 
 		ArrayList<String> words = new ArrayList<String>();
 		StringBuilder sb = new StringBuilder();
@@ -95,6 +100,7 @@ public class CNFConversionCorrectnessTest {
 		g.addRule("A -> aA");
 		g.addRule("A -> a");
 		g = g.toCNF();
+		assertTrue(g.isInCNF());
 		assertTrue(g.derives("a"));
 		assertTrue(g.derives("(a)"));
 		assertTrue(g.derives("(aaa)"));
@@ -123,7 +129,7 @@ public class CNFConversionCorrectnessTest {
 		g.addRule("B -> b");
 		g.addRule("B -> epsilon");
 		g = g.toCNF();
-		System.out.println(g.toString());
+		assertTrue(g.isInCNF());
 		assertTrue(g.containsRule("S -> a"));
 		assertTrue(g.containsRule("A -> a"));
 		assertTrue(g.containsRule("A -> b"));
@@ -133,6 +139,52 @@ public class CNFConversionCorrectnessTest {
 		assertFalse(g.containsRule("A -> B"));
 		assertFalse(g.containsRule("A -> S"));
 		assertFalse(g.containsRule("B -> epsilon"));
+	}
+
+	@Test
+	public void testGrammarThatGeneratesMoreLeftAsThanRightBs() {
+		CFG g = new CFG();
+		g.addRule("S -> aSb");
+		g.addRule("S -> a");
+		g.addRule("S -> A");
+		g.addRule("A -> a");
+		g.addRule("A -> aA");
+		g = g.toCNF();
+		assertTrue(g.isInCNF());
+		assertTrue(g.derives("a"));
+		assertTrue(g.derives("aab"));
+		assertTrue(g.derives("aaaaaabbbbb"));
+		assertTrue(g.derives("aaaaaaaaaaaaaaaaaaaaaaaaaaab"));
+		assertTrue(g.derives("aaaaaa"));
+		assertFalse(g.derives("ab"));
+		assertFalse(g.derives("aabb"));
+		assertFalse(g.derives("aaaaabbbbbbbbbbbb"));
+		assertFalse(g.derives("b"));
+		assertFalse(g.derives("ba"));
+		assertFalse(g.derives("aba"));
+	}
+
+	@Test
+	public void testGrammarThatGeneratesEqualNoOfAsAndBsThenAnyNoOfCs() {
+		CFG g = new CFG();
+		g.addRule("S -> XY");
+		g.addRule("X -> aXb");
+		g.addRule("X -> epsilon");
+		g.addRule("Y -> cY");
+		g.addRule("Y -> epsilon");
+		g = g.toCNF();
+		assertTrue(g.isInCNF());
+		assertTrue(g.derives("abc"));
+		assertTrue(g.derives("abcccccccc"));
+		assertTrue(g.derives("aaabbbc"));
+		assertTrue(g.derives("aabb"));
+		assertTrue(g.derives("ccccc"));
+		assertFalse(g.derives("a"));
+		assertFalse(g.derives("b"));
+		assertFalse(g.derives("ac"));
+		assertFalse(g.derives("bc"));
+		assertFalse(g.derives("aaaabbbbbc"));
+		assertFalse(g.derives("aaaabbbcccccccc"));
 	}
 
 }
