@@ -1,7 +1,7 @@
 public class InsertionEfficiencyTest {
 
 	public static void main(String[] args) {
-		final int LOOP_COUNT = 5;
+		final int LOOP_COUNT = 15;
 		final int I_MAX = 30000000;
 		System.out.println("Time efficiency test for inserting rules:");
 

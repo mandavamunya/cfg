@@ -17,14 +17,14 @@ public class FinitenessEfficiencyTest {
 	}
 
 	public static void main(String[] args) {
-		final int LOOP_COUNT = 2;
+		final int LOOP_COUNT = 15;
 		final int I_MAX = 48000;
 		createWords();
 		CFG g = new CFG();
 		System.out.println("Time efficiency test on deciding finiteness.");
-/*
-		System.out.println("\nTesting best case grammar:");
-		for (int i = 1500 * 8; i <= I_MAX * 8; i *= 2) {
+
+		System.out.println("\nTesting best-case grammar:");
+		for (int i = 1500; i <= I_MAX * 16; i *= 2) {
 			long totalTime = 0;
 			for (int j = 0; j < LOOP_COUNT; j++) {
 				g = new CFG();
@@ -39,9 +39,9 @@ public class FinitenessEfficiencyTest {
 			System.out.print("Size of the CFG: " + i);
 			System.out.print(", Average time: ");
 			System.out.println((totalTime / 1000000 / LOOP_COUNT) + " ms.");
-		}*/
+		}
 
-		System.out.println("\nTesting disconnected duplicate chain rules:");
+		System.out.println("\nTesting worst-case grammar:");
 		for (int i = 1500; i <= I_MAX; i *= 2) {
 			long totalTime = 0;
 			for (int j = 0; j < LOOP_COUNT; j++) {
@@ -63,8 +63,8 @@ public class FinitenessEfficiencyTest {
 			System.out.println((totalTime / 1000000 / LOOP_COUNT) + " ms.");
 		}
 
-		System.out.println("\nTesting a random CFG:");
-		for (int i = 1500 * 8; i <= I_MAX * 8; i *= 2) {
+		System.out.println("\nTesting a random grammar:");
+		for (int i = 1500; i <= I_MAX * 16; i *= 2) {
 			long totalTime = 0;
 			for (int j = 0; j < LOOP_COUNT; j++) {
 				g = RandomCFGGenerator.createRandomCFG(i);
