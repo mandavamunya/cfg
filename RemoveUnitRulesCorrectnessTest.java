@@ -171,5 +171,22 @@ public class RemoveUnitRulesCorrectnessTest {
 		assertFalse(g.containsRule("S5 -> S6"));
 		assertFalse(g.containsRule("S6 -> A"));
 	}
+
+	@Test
+	public void testManyBranches() {
+		CFG g = new CFG();
+		g.addRule("S -> A");
+		g.addRule("A -> B");
+		g.addRule("B -> C");
+		g.addRule("B -> D");
+		g.addRule("B -> E");
+		g.addRule("B -> F");
+		g.addRule("C -> c");
+		g.addRule("D -> d");
+		g.addRule("E -> e");
+		g.addRule("F -> f");
+		g = g.removeUnitRules();
+		System.out.println(g.toString());
+	}
 	
 }
