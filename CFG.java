@@ -32,7 +32,6 @@ public class CFG {
 	// These variables might need to be updated or reset before used.
 	private ArrayList<HashSet<Integer>> rulesInv;
 	private ArrayList<ArrayList<Integer>> bodiesInv;
-	private ArrayList<HashSet<Integer>> nonUnitRules;
 	private boolean[] hasVisitedSymbol;
 	private boolean[] hasVisitedBody;
 	private boolean[] isReachable;
@@ -42,9 +41,8 @@ public class CFG {
 	private int[] scc;
 	private int[] indexes;
 	private int index;
-	private boolean[] onStack;
-	private Stack<Integer> stack;
 	private int[] lowLink;
+	private Stack<Integer> stack;
 
 	/**
 	 * Construct an empty CFG.
@@ -218,9 +216,13 @@ public class CFG {
 		return this.removeNonGeneratingSymbols().removeUnreachableSymbols();
 	}
 	
+	/**
+	 * Create and return a new CFG which contains only the generating symbols 
+	 * and rules.
+	 */
 	public CFG removeNonGeneratingSymbols() {
 		setBodySymbolCount();
-		Queue<Integer> q = initiateQueue();
+		Queue<Integer> q = initiateQueueWithGeneratingBodyNodes();
 		Queue<Boolean> nextIsABodyNode = new LinkedList<Boolean>();
 		for (int i = 0; i < q.size(); i++) {
 			nextIsABodyNode.add(true);
@@ -252,7 +254,7 @@ public class CFG {
 	}
 	
 	/**
-	 * Label each body node with the number of outgoing edges.
+	 * Label each body node with the number of its outgoing edges.
 	 */
 	private void setBodySymbolCount() {
 		bodySymbolCount = new int[bodies.size()];	// All 0 as default.
@@ -267,9 +269,9 @@ public class CFG {
 
 	/**
 	 * Create and return a queue containing all body nodes of the CFG whose
-	 * outgoing edges all lead to terminal or epsilon nodes.
+	 * outgoing edges all lead to terminal nodes or the epsilon node.
 	 */
-	private Queue<Integer> initiateQueue() {
+	private Queue<Integer> initiateQueueWithGeneratingBodyNodes() {
 		Queue<Integer> q = new LinkedList<Integer>();
 		for (int bodyId = 0; bodyId < bodies.size(); bodyId++) {
 			boolean addBodyId = true;
@@ -340,6 +342,9 @@ public class CFG {
 		return g;
 	}
 
+	/**
+	 * Create and return a new CFG with only useful symbols and rules.
+	 */
 	public CFG removeUnreachableSymbols() {
 		isReachable = new boolean[nts.size()];
 		hasVisitedSymbol = new boolean[nts.size()];
@@ -348,6 +353,9 @@ public class CFG {
 		return createNewCFGKeepingNonterminalsIn(isReachable);
 	}
 
+	/**
+	 * Perform a depth-first search to find all reachable body nodes.
+	 */
 	private void findReachableBodies(int ntID) {
 		isReachable[ntID] = hasVisitedSymbol[ntID] = true;
 		for (int bodyID : rules.get(ntID)) {
@@ -362,6 +370,12 @@ public class CFG {
 		}
 	}
 	
+	/**
+	 * Check if this CFG is in CNF.
+	 * 
+	 * NOTE: THIS ALGORITHM IS INCOMPLETE! IT DOES NOT MAKE SURE THAT EVERY
+	 * SYMBOL IN THE CFG IS USEFUL!
+	 */
 	public boolean isInCNF() {
 		for (int ntID = 0; ntID < rules.size(); ntID++) {
 			for (int bodyID : rules.get(ntID)) {
@@ -388,8 +402,7 @@ public class CFG {
 	 * Create and return a new equivalent CFG that is in Chomsky Normal Form.
 	 */
 	public CFG toCNF() {
-		CFG g = this;
-		g = g.createNewStartSymbol();
+		CFG g = this.createNewStartSymbol();
 		g = g.substituteTerminals();
 		g = g.splitUpLongRules();
 		g = g.removeEpsilonRules();
@@ -398,6 +411,10 @@ public class CFG {
 		return g;
 	}
 	
+	/**
+	 * Substitute every terminal u in a body of length at least 2 with a
+	 * nonterminal U and a unit rule U -> u.
+	 */
 	public CFG substituteTerminals() {
 		CFG g = new CFG();
 		HashMap<Integer, String> substitutedNames;
@@ -431,6 +448,9 @@ public class CFG {
 		return g;
 	}
 	
+	/**
+	 * Split up rules with long bodies into rules with bodies of length 2.
+	 */
 	public CFG splitUpLongRules() {
 		CFG g = new CFG();
 		int k = 0;
@@ -558,12 +578,18 @@ public class CFG {
 		return !this.toCNF().isCyclicInit(startSymbolID);
 	}
 	
+	/**
+	 * Initiation method for isCyclic().
+	 */
 	public boolean isCyclicInit(int ntID) {
 		isStacked = new boolean[nts.size()];
 		hasVisitedSymbol = new boolean[nts.size()];
 		return isCyclic(startSymbolID);
 	}
 	
+	/**
+	 * Search for cycles in the CFG graph. Return true iff there is a cycle.
+	 */
 	public boolean isCyclic(int ntID) {
 		isStacked[ntID] = hasVisitedSymbol[ntID] = true;
 		for (int bodyID : rules.get(ntID)) {
@@ -582,6 +608,10 @@ public class CFG {
 		return false;
 	}
 	
+	/**
+	 * Substitute the old start symbol with a new nonterminal, and add a new
+	 * start symbol to ensure that S cannot be in the body of any rule.
+	 */
 	public CFG createNewStartSymbol() {
 		CFG g = new CFG();
 		String newStartSymbol = "S" + findUnusedNonterminalName("S", 0);
@@ -610,11 +640,19 @@ public class CFG {
 		return g;
 	}
 	
+	/**
+	 * Remove unit rules while keeping the language the same. This is done by
+	 * first computing all the strongly connected components, and then removing
+	 * the unit cycles (i.e. contracting every nonterminal node of a strongly
+	 * connected component). Next, traverse the graph in inverted order and for
+	 * each rule A -> B, copy the rules where B is the head to A. Finally,
+	 * remove all unit rules.
+	 */
 	public CFG removeUnitRules() {
 		findSCCInit();
 		CFG g = this.removeUnitCycles();
-		g = g.removeUnitRules2();
-		return g.removeUnitRules3();
+		g = g.copyRulesUpAlongUnitRules();
+		return g.removeUnitRulesOnly();
 	}
 	
 	/**
@@ -660,7 +698,7 @@ public class CFG {
 		}
 		indexes = new int[nts.size()];
 		lowLink = new int[nts.size()];
-		onStack = new boolean[nts.size()];
+		isStacked = new boolean[nts.size()];
 		for (int i = 0; i < indexes.length; i++) {
 			indexes[i] = -1;
 		}
@@ -680,7 +718,7 @@ public class CFG {
 	public void findSCC(int ntID) {
 		indexes[ntID] = lowLink[ntID] = index++;
 		stack.push(ntID);
-		onStack[ntID] = true;
+		isStacked[ntID] = true;
 		
 		for (int bodyID : rules.get(ntID)) {
 			if (!(bodies.get(bodyID).size() == 1 && isNonterminal(bodies.get(bodyID).get(0)))) {
@@ -690,7 +728,7 @@ public class CFG {
 			if (indexes[ntID2] == -1) {
 				findSCC(ntID2);
 				lowLink[ntID] = Math.min(lowLink[ntID], lowLink[ntID2]);
-			} else if (onStack[ntID2]) {
+			} else if (isStacked[ntID2]) {
 				lowLink[ntID] = Math.min(lowLink[ntID], indexes[ntID2]);
 			}
 		}
@@ -699,7 +737,7 @@ public class CFG {
 			int ntID2 = stack.peek();
 			do {
 				ntID2 = stack.pop();
-				onStack[ntID2] = false;
+				isStacked[ntID2] = false;
 				scc[ntID2] = ntID;
 			} while (ntID2 != ntID);
 		}
@@ -716,7 +754,7 @@ public class CFG {
 	 * Note: This method actually changes the rules of THIS grammar! (In most
 	 * other methods, we create a new grammar).
 	 */
-	public CFG removeUnitRules2() {
+	public CFG copyRulesUpAlongUnitRules() {
 		hasVisitedSymbol = new boolean[nts.size()];
 		setNtUnitRuleCount();
 		setBodySymbolCount();
@@ -742,7 +780,12 @@ public class CFG {
 		return this;
 	}
 	
-	public CFG removeUnitRules3() {
+	/**
+	 * Create and return a new CFG with unit rules removed ONLY. That is, we 
+	 * do not add any rules to make the language of the new CFG equal to the old
+	 * one. 
+	 */
+	public CFG removeUnitRulesOnly() {
 		CFG g = new CFG();
 		for (int ntID = 0; ntID < rules.size(); ntID++) {
 			for (int bodyID : rules.get(ntID)) {
@@ -754,6 +797,10 @@ public class CFG {
 		return g;
 	}
 	
+	/**
+	 * Create and return a queue where each nonterminal A, such that there exist
+	 * no unit rule where A is head, is added.
+	 */
 	private Queue<Integer> initiateQueueWithNonUnitNts() {
 		Queue<Integer> q = new LinkedList<Integer>();
 		for (int ntID = 0; ntID < nts.size(); ntID++) {
@@ -765,6 +812,10 @@ public class CFG {
 		return q;
 	}
 	
+	/**
+	 * Label each nonterminal A with how many unit rules of the form A -> B
+	 * there exist, for any nonterminal B.
+	 */
 	private void setNtUnitRuleCount() {
 		ntUnitRuleCount = new int[nts.size()];
 		for (int ntID = 0; ntID < rules.size(); ntID++) {
