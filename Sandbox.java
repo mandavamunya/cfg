@@ -11,7 +11,8 @@ public class Sandbox {
 		CFG cfg = new CFG();
 		System.out.print("Enter commands ('quit' to exit). ");
 		System.out.println("Make sure to format the commands properly!");
-		System.out.println("1: To add a new rule, type it as 'add A -> BCDE'.");
+		System.out.print("1: To add a new rule, type it as 'add A -> BCDE'. ");
+		System.out.println("To add an epsilon rule, 'A -> epsilon'.");
 		System.out.println("2: To print the CFG, type 'print'.");
 		System.out.println("3: To empty the CFG, type 'empty'.");
 		System.out.println("4: Convert to CNF by typing 'cnf'.");
